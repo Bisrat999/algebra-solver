@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>100% Offline Algebra Solver</title>
+    
+    <!-- ALL STYLES EMBEDDED LOCALLY - NO INTERNET CONNECTION REQUIRED -->
+    <style>
+        /* General Setup and Font */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f4f8; /* Light background */
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        /* Container for Mobile View */
+        .container {
+            width: 100%;
+            max-width: 448px; /* max-w-md equivalent */
+        }
+
+        /* Card Styling */
+        .card {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 10px 15px rgba(0, 0, 0, 0.05);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        /* Header Styling */
+        .header {
+            background-image: linear-gradient(to right, #4f46e5, #3b82f6); /* Indigo to Blue Gradient */
+            color: white;
+            padding: 24px;
+            border-radius: 12px 12px 0 0;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header h1 {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Input Field */
+        .input-group {
+            position: relative;
+            margin-bottom: 16px;
+        }
+        #equationInput {
+            width: 100%;
+            padding: 12px;
+            padding-right: 40px; /* Space for the icon */
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            color: #1f2937;
+            transition: border-color 0.3s;
+        }
+        #equationInput:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        .input-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Button Styling */
+        #solveButton {
+            width: 100%;
+            background-color: #4f46e5;
+            color: white;
+            font-weight: bold;
+            padding: 12px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        #solveButton:hover {
+            background-color: #4338ca;
+        }
+
+        /* Results Styling */
+        #resultsCard {
+            border-top: 4px solid #10b981; /* Green border for success */
+        }
+        .results-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+        .results-header svg {
+            color: #10b981; /* Green checkmark */
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
+        }
+        .step {
+            margin-bottom: 12px;
+        }
+        .step-title {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        .step-detail {
+            font-size: 14px;
+            color: #4b5563;
+            margin-left: 12px;
+            padding-left: 8px;
+            border-left: 2px solid #e5e7eb;
+        }
+        .final-answer-container {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .final-answer-container p:first-child {
+            font-weight: bold;
+            font-size: 16px;
+            color: #4f46e5;
+        }
+        #finalAnswer {
+            font-size: 28px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-top: 4px;
+        }
+
+        /* Message Box (Error/Success) */
+        .message-box {
+            padding: 16px;
+            border-radius: 8px;
+            margin-top: 16px;
+            font-weight: 500;
+            display: none; /* Default hidden */
+        }
+        .message-box.error {
+            background-color: #fee2e2; /* Light Red */
+            color: #dc2626; /* Dark Red */
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Algebra Solver</h1>
+            <p>Solves simple linear equations for 'x' (ax + b = c).</p>
+        </header>
+
+        <!-- Main Input Card -->
+        <div class="card">
+            <h2 class="results-header" style="color: #374151;">Enter Your Equation:</h2>
+            <div class="input-group">
+                <input type="text" id="equationInput" placeholder="Example: 4x + 5 = 17">
+                <span class="input-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
+                    </svg>
+                </span>
+            </div>
+
+            <button id="solveButton">
+                Solve for X
+            </button>
+        </div>
+
+        <!-- Result Card -->
+        <div id="resultsCard" class="card hidden">
+            <h2 class="results-header">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                Solution Steps:
+            </h2>
+            <div id="solutionSteps" class="space-y-3 text-gray-700">
+                <!-- Steps will be injected here -->
+            </div>
+            <div class="final-answer-container">
+                <p>Final Answer:</p>
+                <p id="finalAnswer"></p>
+            </div>
+        </div>
+
+        <!-- Error/Message Box -->
+        <div id="messageBox" class="message-box error" >
+            <p id="errorMessage"></p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const input = document.getElementById('equationInput');
+            const solveButton = document.getElementById('solveButton');
+            const resultsCard = document.getElementById('resultsCard');
+            const solutionSteps = document.getElementById('solutionSteps');
+            const finalAnswer = document.getElementById('finalAnswer');
+            const messageBox = document.getElementById('messageBox');
+            const errorMessage = document.getElementById('errorMessage');
+
+            // --- Helper function for displaying messages (instead of alert) ---
+            const showMessage = (message, isError = true) => {
+                errorMessage.textContent = message;
+                messageBox.className = isError 
+                    ? 'message-box error' 
+                    : 'message-box success';
+                messageBox.style.display = 'block';
+                resultsCard.classList.add('hidden');
+            };
+
+            const hideMessage = () => {
+                messageBox.style.display = 'none';
+            };
+
+            const cleanAndParseSide = (side) => {
+                let coeffA = 0;
+                let constB = 0;
+                
+                // Remove spaces and ensure implicit 1x is handled
+                side = side.replace(/\s/g, '');
+                
+                // Regex to find all terms, including sign
+                const terms = side.match(/(\+|\-)?(\d*)x|(\+|\-)?\d+/g);
+                
+                if (!terms) return { coeffA, constB };
+
+                terms.forEach(term => {
+                    const xMatch = term.match(/(\+|\-)?(\d*)x/);
+                    if (xMatch) {
+                        // This is an x term
+                        let sign = xMatch[1] === '-' ? -1 : 1;
+                        let coefficient = xMatch[2] === '' ? 1 : parseInt(xMatch[2]);
+                        if (xMatch[2] === '' && xMatch[1] === '-') coefficient = -1;
+                        
+                        coeffA += sign * coefficient;
+                    } else {
+                        // This is a constant term
+                        constB += parseInt(term);
+                    }
+                });
+
+                return { coeffA, constB };
+            };
+
+
+            // --- Core Logic: Solves Simple Linear Equations (ax + b = cx + d) ---
+            const solveEquation = (equation) => {
+                // 1. Clean the equation: remove spaces
+                const cleaned = equation.replace(/\s+/g, '').toLowerCase();
+
+                // 2. Parse the equation: separate LHS and RHS
+                const parts = cleaned.split('=');
+                if (parts.length !== 2) {
+                    throw new Error("Invalid equation format. Must contain a single '='.");
+                }
+                
+                // Parse coefficients and constants for both sides
+                const lhs = cleanAndParseSide(parts[0]);
+                const rhs = cleanAndParseSide(parts[1]);
+
+                // 3. Combine like terms to get the form: Ax = B
+                const combinedCoeffA = lhs.coeffA - rhs.coeffA; // Ax
+                const combinedConstB = rhs.constB - lhs.constB; // B
+
+                if (combinedCoeffA === 0) {
+                    if (combinedConstB === 0) {
+                        throw new Error("The equation simplifies to 0 = 0. This means there are infinite solutions (identity).");
+                    } else {
+                        throw new Error(`The equation simplifies to 0 = ${combinedConstB}. This means there is no solution (contradiction).`);
+                    }
+                }
+                
+                // --- Steps Generation ---
+                let steps = [];
+                
+                // Helper to format terms (e.g., -1 -> -1, +5 -> +5)
+                const formatTerm = (num) => num >= 0 ? `+ ${num}` : `- ${Math.abs(num)}`;
+
+                // Step 1: Group x-terms on the left, constants on the right
+                const step1Title = "Step 1: Group x-terms (Left) and Constants (Right)";
+                const step1Detail = `Subtract ${rhs.coeffA}x from both sides and subtract ${lhs.constB} from both sides.`;
+                steps.push({ title: step1Title, detail: step1Detail });
+
+                const formattedA = combinedCoeffA === 1 ? 'x' : (combinedCoeffA === -1 ? '-x' : combinedCoeffA + 'x');
+                const step1Result = `${formattedA} = ${combinedConstB}`;
+                steps.push({ title: "Equation After Step 1", detail: step1Result });
+
+
+                // Step 2: Divide to solve for x
+                const step2Title = "Step 2: Solve for x";
+                const step2Detail = `Divide both sides by the coefficient of x, which is ${combinedCoeffA}.`;
+                steps.push({ title: step2Title, detail: step2Detail });
+
+                const solutionX = combinedConstB / combinedCoeffA;
+                
+                const finalResult = `x = ${solutionX}`;
+                steps.push({ title: "Equation After Step 2", detail: finalResult });
+                
+                return { solution: solutionX, steps: steps };
+            };
+
+
+            // --- Event Listener ---
+            solveButton.addEventListener('click', () => {
+                const equation = input.value.trim();
+                hideMessage();
+                resultsCard.classList.add('hidden');
+                solutionSteps.innerHTML = '';
+
+                if (!equation) {
+                    showMessage("Please enter an equation to solve (e.g., 3x - 1 = 2x + 14).", true);
+                    return;
+                }
+
+                try {
+                    const result = solveEquation(equation);
+                    
+                    // Display Steps
+                    result.steps.forEach(step => {
+                        const stepElement = document.createElement('div');
+                        stepElement.classList.add('step');
+                        stepElement.innerHTML = `
+                            <p class="step-title">${step.title}</p>
+                            <p class="step-detail">${step.detail}</p>
+                        `;
+                        solutionSteps.appendChild(stepElement);
+                    });
+
+                    // Display Final Answer
+                    finalAnswer.textContent = `x = ${result.solution}`;
+                    resultsCard.classList.remove('hidden');
+
+                } catch (error) {
+                    showMessage(error.message, true);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
